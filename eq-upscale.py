@@ -44,13 +44,11 @@ if os.path.exists("extracted") == False:
     os.mkdir("extracted")
 
 archives = os.listdir("archives")
-
-if len(archives) == 0:
-    print("No archives found in archives folder.")
-
+archive_found = False
 for archive in archives:
     # Extract s3d/eqg
     if archive.endswith(".s3d") or archive.endswith(".eqg"):
+        archive_found = True
         result = subprocess.run(["quail", "extract", "archives//" + archive, "extracted//_" + archive], shell=True, capture_output=True, text=True,)
         print(result.stdout)
 
@@ -74,3 +72,6 @@ for archive in archives:
 
         # Compress upscaled images back into archive
         result = subprocess.run(["quail", "compress", "extracted//_" + archive], shell=True, capture_output=True, text=True,)
+
+if archive_found == False:
+    print("No valid eqg or s3d archive files found")
