@@ -72,5 +72,5 @@ for archive in archives:
                 files_iterated += 1
                 print(f"Completed File: {files_iterated}/{len(files)}\n")
 
-    # Compress upscaled images back into archive
-    result = subprocess.run(["quail", "compress", "extracted//_" + archive], shell=True, capture_output=True, text=True,)
+        # Compress upscaled images back into archive
+        result = subprocess.run(["quail", "compress", "extracted//_" + archive], shell=True, capture_output=True, text=True,)
