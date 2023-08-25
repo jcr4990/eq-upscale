@@ -15,7 +15,7 @@ python eq-upscale.py -t grass,stone
 ```
 eq-upscale will ignore any textures that don't begin with "grass" or "stone". You can use this to selectively upscale specific textures. Depending on which version of EverQuest you intend to play. You may be limited to a 32 bit client and thus will need to be cautious about being too extensive with upscaling or risk client crashes due to lack of memory.
 
-
+## External Resources
 This project would not be possible without the extensive work of the developer(s) of both "Quail" and "Real-ESRGAN-ncnn-vulkan"
 
 https://github.com/xackery/quail
