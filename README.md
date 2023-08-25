@@ -29,7 +29,8 @@ This project would not be possible without the extensive work of the developer(s
 
 https://github.com/xackery/quail
 
-https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan
+https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan  
+
 
 > [!WARNING]
 > You are likely to encounter some bugs. I've spent many hours fiddling with EQ files and I've learned there's always bound to be surprises. Make sure you back up your original files in case something goes haywire.
