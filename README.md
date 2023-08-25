@@ -8,7 +8,7 @@ Simply clone this repo (or download zip) and place desired .s3d or .eqg file in 
 ```
 python eq-upscale.py
 ```
-This will upscale every texture file within any archive file located in the "archives" folder. Once complete a new version of each .eqg/.s3d archive will be generated in the root eq-upscale folder. Simply copy this archive into your EverQuest directory and overwrite the existing one to load them into the game. Be sure to make copies of your original archive files just in case.
+This will upscale every texture file within any archive file located in the "archives" folder. Once complete a new version of each .eqg/.s3d archive will be generated in the root eq-upscale folder. Simply copy this archive into your EverQuest directory and overwrite the existing one to load them into the game. Be sure to make backup copies of your original archive files just in case.
 
 ## Arguments
 
@@ -23,6 +23,9 @@ eq-upscale will upscale all textures by 4x by default. If you wish you can selec
 ```
 python eq-upscale.py -s 2
 ```
+
+> [!WARNING]
+> You are likely to encounter some bugs. I've spent many hours fiddling with EQ files and I've learned there's always bound to be surprises. Once again make sure you back up your original files in case something goes haywire.
 
 ## External Resources
 This project would not be possible without the extensive work of the developer(s) of both "Quail" and "Real-ESRGAN-ncnn-vulkan"
