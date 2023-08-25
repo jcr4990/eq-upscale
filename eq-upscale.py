@@ -37,30 +37,40 @@ parser.add_argument("-s", "--scale", help="Upscale ratio (can be 2, 3, 4. defaul
 parser.add_argument("-t", "--texture_prefix", help="List of comma separated strings. Only upscale textures starting with these values.", default="", type=str)
 args = parser.parse_args()
 
+if os.path.exists("archives") == False:
+    os.mkdir("archives")
+
+if os.path.exists("extracted") == False:
+    os.mkdir("extracted")
+
 archives = os.listdir("archives")
+
+if len(archives) == 0:
+    print("No archives found in archives folder.")
+
 for archive in archives:
     # Extract s3d/eqg
     if archive.endswith(".s3d") or archive.endswith(".eqg"):
         result = subprocess.run(["quail", "extract", "archives//" + archive, "extracted//_" + archive], shell=True, capture_output=True, text=True,)
         print(result.stdout)
 
-    # Iterate files in archive folder and upscale with realesrgan
-    files = os.listdir("extracted//_" + archive)
-    files_iterated = 0
-    for file in files:
-        if (file.endswith(".dds") or file.endswith(".bmp") or file.endswith(".png")) and file.startswith(tuple(args.texture_prefix.split(","))):
-            original_path = "extracted//_" + archive + "//" + file
-            upscaled_path = "tmp//" + file.split(".")[0] + ".png"
-            img_format = check_file_format(original_path)
+        # Iterate files in archive folder and upscale with realesrgan
+        files = os.listdir("extracted//_" + archive)
+        files_iterated = 0
+        for file in files:
+            if (file.endswith(".dds") or file.endswith(".bmp") or file.endswith(".png")) and file.startswith(tuple(args.texture_prefix.split(","))):
+                original_path = "extracted//_" + archive + "//" + file
+                upscaled_path = "tmp//" + file.split(".")[0] + ".png"
+                img_format = check_file_format(original_path)
 
-            print(f"File: {file}\nType: {img_format}")
-            result = subprocess.run(["realesrgan-ncnn-vulkan.exe", "-i", original_path, "-o", upscaled_path, "-n", "realesrgan-x4plus", "-s", args.scale], shell=True, capture_output=True, text=True,)
-            # print(result.stderr)
+                print(f"File: {file}\nType: {img_format}")
+                result = subprocess.run(["realesrgan-ncnn-vulkan.exe", "-i", original_path, "-o", upscaled_path, "-n", "realesrgan-x4plus", "-s", args.scale], shell=True, capture_output=True, text=True,)
+                # print(result.stderr)
 
-            handle_upscaled_png(img_format, original_path, upscaled_path)
+                handle_upscaled_png(img_format, original_path, upscaled_path)
 
-            files_iterated += 1
-            print(f"Completed File: {files_iterated}/{len(files)}\n")
+                files_iterated += 1
+                print(f"Completed File: {files_iterated}/{len(files)}\n")
 
     # Compress upscaled images back into archive
     result = subprocess.run(["quail", "compress", "extracted//_" + archive], shell=True, capture_output=True, text=True,)
