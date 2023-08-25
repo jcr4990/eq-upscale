@@ -1,0 +1,6 @@
+*.s3d
+*.eqg
+backup*
+full_*
+tmp*
+copyfiles.py
