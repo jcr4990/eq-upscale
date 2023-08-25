@@ -1,6 +1,9 @@
 # eq-upscale
 
-Easy to use tool for AI upscaling various textures within EverQuest .eqg and .s3d archive files.
+Experimental tool for AI upscaling various textures within EverQuest .eqg and .s3d archive files.
+
+> [!WARNING]
+> You are likely to encounter some bugs. I've spent many hours fiddling with EQ files and I've learned there's always bound to be surprises. Make sure you back up your original files in case something goes haywire.
 
 ## Installation
 
@@ -23,9 +26,6 @@ eq-upscale will upscale all textures by 4x by default. If you wish you can selec
 ```
 python eq-upscale.py -s 2
 ```
-
-> [!WARNING]
-> You are likely to encounter some bugs. I've spent many hours fiddling with EQ files and I've learned there's always bound to be surprises. Once again make sure you back up your original files in case something goes haywire.
 
 ## External Resources
 This project would not be possible without the extensive work of the developer(s) of both "Quail" and "Real-ESRGAN-ncnn-vulkan"
