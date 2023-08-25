@@ -23,6 +23,7 @@ eq-upscale will upscale all textures by 4x by default. If you wish you can selec
 ```
 python eq-upscale.py -s 2
 ```
+2x and 3x scaling have not been extensively tested yet to work properly once in-game. In most cases you wouldn't need to use this option. Primarily added it as an option if memory becomes an issue and starts causing client crashes. Bringing down the scale may help in this case.
 <br/>
 
 ## External Resources
