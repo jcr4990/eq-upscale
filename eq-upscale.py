@@ -31,16 +31,16 @@ def handle_upscaled_png(img_format, original_path, upscaled_path):
 
 
 # Init Parser
-msg = "Welcome to eq-upscale. Use this tool to upscale texture images located inside .eqg/.s3d EverQuest files."
+msg = "Welcome to eq-upscale. Use this tool to upscale texture images located inside .eqg/.s3d EverQuest archive files."
 parser = argparse.ArgumentParser(description=msg)
 parser.add_argument("-s", "--scale", help="Upscale ratio (can be 2, 3, 4. default=4)", default="4", type=str)
 parser.add_argument("-t", "--texture_prefix", help="List of comma separated strings. Only upscale textures starting with these values.", default="", type=str)
 args = parser.parse_args()
 
-if os.path.exists("archives") == False:
+if os.path.exists("archives") is False:
     os.mkdir("archives")
 
-if os.path.exists("extracted") == False:
+if os.path.exists("extracted") is False:
     os.mkdir("extracted")
 
 archives = os.listdir("archives")
@@ -73,5 +73,5 @@ for archive in archives:
         # Compress upscaled images back into archive
         result = subprocess.run(["quail", "compress", "extracted//_" + archive], shell=True, capture_output=True, text=True,)
 
-if archive_found == False:
+if archive_found is False:
     print("No valid eqg or s3d archive files found")
