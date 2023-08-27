@@ -4,7 +4,7 @@ import subprocess
 from PIL import Image
 
 
-def check_file_format(path):
+def get_format(path):
     with open(path, 'rb') as file:
         header = file.read(4)
 
@@ -16,7 +16,7 @@ def check_file_format(path):
             return "bmp"
         else:
             print(header)
-            input("Unknown File Format?")
+            print("Unknown File Format?")
 
 
 def save_upscaled_img(img_format, original_path, upscaled_path):
@@ -29,7 +29,7 @@ def save_upscaled_img(img_format, original_path, upscaled_path):
     os.rename(original_path + "." + img_format, original_path)
 
 
-def transparent_texture_check(path):
+def transparency_check(path):
     bmp = Image.open(path)
     bmp_palette = bmp.getpalette()
     try:
@@ -43,11 +43,11 @@ def transparent_texture_check(path):
         return False
 
 
-# Init Parser
+# Init
 msg = "Welcome to eq-upscale. Use this tool to upscale texture images located inside .eqg/.s3d EverQuest archive files."
 parser = argparse.ArgumentParser(description=msg)
 parser.add_argument("-s", "--scale", help="Upscale ratio (can be 2, 3, 4. default=4)", default="4", type=str)
-parser.add_argument("-t", "--texture_prefix", help="List of comma separated strings. Only upscale textures starting with these values.", default="", type=str)
+parser.add_argument("-t", "--texture_prefix", help="Comma separated texture prefix filter. Only upscale textures starting with these values. For example -t stone,rock will upscale all textures starting with 'stone' or 'rock'", default="", type=str)
 args = parser.parse_args()
 
 if os.path.exists("archives") is False:
@@ -67,28 +67,38 @@ for archive in archives:
 
         # Iterate files in archive folder and upscale with realesrgan
         files = os.listdir("extracted//_" + archive)
-        files_iterated = 0
+        files_to_process = 0
+        files_processed = 0
         for file in files:
             if (file.endswith(".dds") or file.endswith(".bmp") or file.endswith(".png")) and file.startswith(tuple(args.texture_prefix.split(","))):
+                files_to_process += 1
+
+        if len(args.texture_prefix) > 0:
+            print(f"{archive} contains {files_to_process} images to process. (filtered by prefix: {args.texture_prefix})\n")
+        else:
+            print(f"{archive} contains {files_to_process} images to process.\n")
+
+        for file in files:
+            if (file.endswith(".dds") or file.endswith(".bmp") or file.endswith(".png")) and file.startswith(tuple(args.texture_prefix.split(","))):
+                files_processed += 1
                 original_path = "extracted//_" + archive + "//" + file
                 upscaled_path = "tmp//" + file.split(".")[0] + ".png"
-                img_format = check_file_format(original_path)
+                img_format = get_format(original_path)
 
                 if img_format == "bmp":
-                    if transparent_texture_check(original_path) is True:
+                    if transparency_check(original_path) is True:
                         print(f"Skipping texture with transparency: {file}")
+                        print(f"Progress: {files_processed}/{files_to_process}\n")
                         continue
 
                 print(f"File: {file}\nType: {img_format}")
                 result = subprocess.run(["realesrgan-ncnn-vulkan.exe", "-i", original_path, "-o", upscaled_path, "-n", "realesrgan-x4plus", "-s", args.scale], shell=True, capture_output=True, text=True,)
 
                 save_upscaled_img(img_format, original_path, upscaled_path)
-
-                files_iterated += 1
-                # print(f"Completed File: {files_iterated}/{len(files)}\n")
+                print(f"Progress: {files_processed}/{files_to_process}\n")
 
         # Compress upscaled images back into archive
         result = subprocess.run(["quail", "compress", "extracted//_" + archive], shell=True, capture_output=True, text=True,)
 
 if archive_found is False:
-    print("No valid eqg or s3d archive files found")
+    print("No .eqg or .s3d files found in /archives")
