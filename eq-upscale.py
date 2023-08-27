@@ -19,15 +19,28 @@ def check_file_format(path):
             input("Unknown File Format?")
 
 
-def handle_upscaled_png(img_format, original_path, upscaled_path):
+def save_upscaled_img(img_format, original_path, upscaled_path):
     img = Image.open(upscaled_path)
-    img = img.convert("RGBA")
 
     if os.path.exists(original_path):
         os.remove(original_path)
 
     img.save(original_path + "." + img_format)
     os.rename(original_path + "." + img_format, original_path)
+
+
+def transparent_texture_check(path):
+    bmp = Image.open(path)
+    bmp_palette = bmp.getpalette()
+    try:
+        transparent_rgb = bmp_palette[0:3]
+    except TypeError:
+        return False
+
+    if transparent_rgb[0] > 240 and transparent_rgb[1] < 15 and transparent_rgb[2] > 240:
+        return True
+    else:
+        return False
 
 
 # Init Parser
@@ -61,14 +74,18 @@ for archive in archives:
                 upscaled_path = "tmp//" + file.split(".")[0] + ".png"
                 img_format = check_file_format(original_path)
 
+                if img_format == "bmp":
+                    if transparent_texture_check(original_path) is True:
+                        print(f"Skipping texture with transparency: {file}")
+                        continue
+
                 print(f"File: {file}\nType: {img_format}")
                 result = subprocess.run(["realesrgan-ncnn-vulkan.exe", "-i", original_path, "-o", upscaled_path, "-n", "realesrgan-x4plus", "-s", args.scale], shell=True, capture_output=True, text=True,)
-                # print(result.stderr)
 
-                handle_upscaled_png(img_format, original_path, upscaled_path)
+                save_upscaled_img(img_format, original_path, upscaled_path)
 
                 files_iterated += 1
-                print(f"Completed File: {files_iterated}/{len(files)}\n")
+                # print(f"Completed File: {files_iterated}/{len(files)}\n")
 
         # Compress upscaled images back into archive
         result = subprocess.run(["quail", "compress", "extracted//_" + archive], shell=True, capture_output=True, text=True,)
