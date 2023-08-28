@@ -1,7 +1,5 @@
 > [!WARNING]
 > There are likely bugs I've yet to encounter. Always back up your original files first to be safe.
-<br/>
-
 # eq-upscale
 Experimental tool for AI upscaling various textures within EverQuest .eqg and .s3d archive files.
 ## Installation & Usage
