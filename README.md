@@ -3,7 +3,7 @@
 # eq-upscale
 Experimental tool for AI upscaling various textures within EverQuest .eqg and .s3d archive files.
 ## Installation & Usage
-Simply clone this repo (or download zip) and place desired .s3d or .eqg file in the "archives" folder. Then open a terminal/command prompt and type the following:
+Assuming Python is already installed. Clone this repo (or download zip and extract then open a command prompt) and cd to the eq-upscale folder. The only dependency needed is Pillow image library which can be installed by typing "pip install -r requirements.txt". From that point you should be all set. Head on over to your EQ folder and grab your desired .s3d or .eqg file(s) and place them in the "archives" subfolder of eq-upscale. Then in your command prompt window type the following:
 ```
 python eq-upscale.py
 ```
