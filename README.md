@@ -35,6 +35,7 @@ python eq-upscale.py -s 2
 
 ### Select Model
 realesrgan-ncnn-vulkan comes packaged with five pre-trained models for upscaling. You can select your model with the -m argument. The options are: realesrgan-x4plus, realesrgan-x4plus-anime, realesr-animevideov3-x2, realesr-animevideov3-x3, realesr-animevideov3-x4
+
 Example:
 ```
 python eq-upscale.py -m realesrgan-x4plus-anime
