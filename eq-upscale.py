@@ -92,6 +92,11 @@ for archive in archives:
 
             print(f"File: {file}\nType: {img_format}")
             result = subprocess.run(["realesrgan-ncnn-vulkan.exe", "-i", original_path, "-o", upscaled_path, "-n", args.model, "-s", args.scale], shell=True, capture_output=True, text=True,)
+
+            if result.stderr[-7:-1] == "failed":
+                print(f"Decode image failed ({file}) skipping...")
+                continue
+
             save_upscaled_img(img_format, original_path, upscaled_path)
             textures_processed += 1
             print(f"Progress: {textures_processed}/{len(textures_to_process)}\n")
