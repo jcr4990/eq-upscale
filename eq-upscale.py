@@ -19,14 +19,18 @@ def get_format(path):
             print("Unknown File Format?")
 
 
-def save_upscaled_img(img_format, original_path, upscaled_path):
+def save_upscaled_img(img_format, original_path, upscaled_path, is_indexed_bmp):
     img = Image.open(upscaled_path)
 
     if os.path.exists(original_path):
         os.remove(original_path)
 
-    img.save(original_path + "." + img_format)
-    os.rename(original_path + "." + img_format, original_path)
+    if is_indexed_bmp:
+        img.save(original_path + ".png")
+        os.rename(original_path + ".png", original_path)
+    else:
+        img.save(original_path + "." + img_format)
+        os.rename(original_path + "." + img_format, original_path)
 
 
 def transparency_check(path):
@@ -37,10 +41,34 @@ def transparency_check(path):
     except TypeError:
         return False
 
-    if transparent_rgb[0] > 240 and transparent_rgb[1] < 15 and transparent_rgb[2] > 240:
-        return True
-    else:
-        return False
+    return True
+    # if transparent_rgb[0] > 240 and transparent_rgb[1] < 15 and transparent_rgb[2] > 240:
+    #     return True
+    # else:
+    #     return False
+
+
+def mod_bmp(original_path):
+    print("Modding bmp image")
+    bmp = Image.open(original_path)
+    bmp_palette = bmp.getpalette()
+    rgb_to_alpha = bmp_palette[0:3]
+    bmp = bmp.convert("RGBA")
+    pixeldata = list(bmp.getdata())
+
+    for i, pixel in enumerate(pixeldata):
+        if pixel[:3] == tuple(rgb_to_alpha):
+            pixeldata[i] = (rgb_to_alpha[0], rgb_to_alpha[1], rgb_to_alpha[2], 0)
+
+    bmp.putdata(pixeldata)
+    png_path = original_path.replace(".bmp", ".png")
+    bmp.save(png_path)
+
+    if os.path.exists(original_path):
+        os.remove(original_path)
+
+    os.rename(png_path, original_path)
+
 
 
 # Init
@@ -84,11 +112,12 @@ for archive in archives:
             img_format = get_format(original_path)
 
             if img_format == "bmp":
-                if transparency_check(original_path) is True:
-                    textures_processed += 1
-                    print(f"Skipping texture with transparency: {file}")
-                    print(f"Progress: {textures_processed}/{len(textures_to_process)}\n")
-                    continue
+                is_indexed_bmp = transparency_check(original_path)
+                if is_indexed_bmp:
+                    mod_bmp(original_path)
+            else:
+                is_indexed_bmp = False
+
 
             print(f"File: {file}\nType: {img_format}")
             result = subprocess.run(["realesrgan-ncnn-vulkan.exe", "-i", original_path, "-o", upscaled_path, "-n", args.model, "-s", args.scale], shell=True, capture_output=True, text=True,)
@@ -97,7 +126,7 @@ for archive in archives:
                 print(f"Decode image failed ({file}) skipping...")
                 continue
 
-            save_upscaled_img(img_format, original_path, upscaled_path)
+            save_upscaled_img(img_format, original_path, upscaled_path, is_indexed_bmp)
             textures_processed += 1
             print(f"Progress: {textures_processed}/{len(textures_to_process)}\n")
 
