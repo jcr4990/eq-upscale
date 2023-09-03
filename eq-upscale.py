@@ -42,10 +42,6 @@ def transparency_check(path):
         return False
 
     return True
-    # if transparent_rgb[0] > 240 and transparent_rgb[1] < 15 and transparent_rgb[2] > 240:
-    #     return True
-    # else:
-    #     return False
 
 
 def mod_bmp(original_path):
