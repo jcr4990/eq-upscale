@@ -19,13 +19,13 @@ def get_format(path):
             print("Unknown File Format?")
 
 
-def save_upscaled_img(img_format, original_path, upscaled_path, is_indexed_bmp):
+def save_upscaled_img(img_format, original_path, upscaled_path, bmp_index):
     img = Image.open(upscaled_path)
 
     if os.path.exists(original_path):
         os.remove(original_path)
 
-    if is_indexed_bmp:
+    if bmp_index:
         img.save(original_path + ".png")
         os.rename(original_path + ".png", original_path)
     else:
@@ -33,11 +33,11 @@ def save_upscaled_img(img_format, original_path, upscaled_path, is_indexed_bmp):
         os.rename(original_path + "." + img_format, original_path)
 
 
-def transparency_check(path):
+def check_bmp_index(path):
     bmp = Image.open(path)
     bmp_palette = bmp.getpalette()
     try:
-        transparent_rgb = bmp_palette[0:3]
+        palette = bmp_palette[0:3]
     except TypeError:
         return False
 
@@ -45,7 +45,6 @@ def transparency_check(path):
 
 
 def mod_bmp(original_path):
-    print("Modding bmp image")
     bmp = Image.open(original_path)
     bmp_palette = bmp.getpalette()
     rgb_to_alpha = bmp_palette[0:3]
@@ -66,6 +65,22 @@ def mod_bmp(original_path):
     os.rename(png_path, original_path)
 
 
+def fix_bleed(upscaled_path):
+    img = Image.open(upscaled_path)
+    if img.mode == "RGBA":
+        modded_img = img.copy()
+        modded_img = modded_img.transpose(Image.FLIP_TOP_BOTTOM)
+        pixel_data = modded_img.load()
+
+        for x in range(modded_img.width):
+            for y in range(modded_img.height):
+                r, g, b, a = pixel_data[x, y]
+
+                if a < 250 and a > 0:
+                    pixel_data[x, y] = (r, g, b, 0)
+
+        modded_img.save(upscaled_path)
+
 
 # Init
 msg = "Welcome to eq-upscale. Use this tool to upscale texture images located inside .eqg/.s3d EverQuest archive files."
@@ -74,6 +89,7 @@ parser.add_argument("-s", "--scale", help="Upscale ratio (can be 2, 3, 4. defaul
 parser.add_argument("-t", "--texture_prefix", help="Comma separated texture prefix filter. Only upscale textures starting with these values. For example -t stone,rock will upscale all textures starting with 'stone' or 'rock'", default="", type=str)
 parser.add_argument("-m", "--model", help="Models included: realesrgan-x4plus, realesrgan-x4plus-anime, realesr-animevideov3-x2, realesr-animevideov3-x3, realesr-animevideov3-x4 (default=realesrgan-x4plus)", default="realesrgan-x4plus", type=str)
 parser.add_argument("-a", "--archive", help="Specify an archive in the 'archives' folder to target. Can select multiple separated by comma. For example: qeynos2.s3d,everfrost.s3d (default will target every archive in folder)", default=None, type=str)
+parser.add_argument("-f", "--fix_alpha", action="store_true", help="Use this flag if you encounter textures that are supposed to be transparent but don't display properly after upscaling. Will slow down the upscaling process a bit. Recommended to only use on specific textures that have transparency issues.")
 args = parser.parse_args()
 
 if args.archive is None:
@@ -107,13 +123,12 @@ for archive in archives:
             upscaled_path = "tmp//" + file.split(".")[0] + ".png"
             img_format = get_format(original_path)
 
-            if img_format == "bmp":
-                is_indexed_bmp = transparency_check(original_path)
-                if is_indexed_bmp:
+            if args.fix_alpha and img_format == "bmp":
+                bmp_index = check_bmp_index(original_path)
+                if bmp_index:
                     mod_bmp(original_path)
             else:
-                is_indexed_bmp = False
-
+                bmp_index = False
 
             print(f"File: {file}\nType: {img_format}")
             result = subprocess.run(["realesrgan-ncnn-vulkan.exe", "-i", original_path, "-o", upscaled_path, "-n", args.model, "-s", args.scale], shell=True, capture_output=True, text=True,)
@@ -122,9 +137,12 @@ for archive in archives:
                 print(f"Decode image failed ({file}) skipping...")
                 continue
 
-            save_upscaled_img(img_format, original_path, upscaled_path, is_indexed_bmp)
+            if args.fix_alpha and bmp_index:
+                fix_bleed(upscaled_path)
+
+            save_upscaled_img(img_format, original_path, upscaled_path, bmp_index)
             textures_processed += 1
-            print(f"Progress: {textures_processed}/{len(textures_to_process)}\n")
+            print(f"\nProgress: {textures_processed}/{len(textures_to_process)}\n")
 
         # Compress upscaled images back into archive
         result = subprocess.run(["quail", "compress", "extracted//_" + archive], shell=True, capture_output=True, text=True,)
